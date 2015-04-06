@@ -1,0 +1,73 @@
+- 主键
+	- 主键列的值不可以修改
+	- 主键值不可重用→某行删除后主键不可以赋予新行
+- SELECT
+	- 未排序
+	- 大小写
+		- 语句不区分
+		- 表明，列值，值可能有所不同，取决于DBMS配置
+	- 检索不同的值：
+		- `SELECT DISTINCT …`
+		- 指定多列时多列同时相同才不会重复检索
+	- 限制结果数目：语法取决于数据库类型
+		- SQL Server & Access：`SELECT TOP 5 XXX FROM XXX`
+		- DB2：`SELECT XXX FROM XXX FETCH FIRST 5 ROWS ONLY`
+		- Oracle：`SELECT XXX FROM XXX WHERE ROWNUM <= 5`
+		- **MySQL**，MariaDB，PostgreSQL，**SQLite**：`SELECT XXX FROM XXX LIMIT 5`
+- 注释
+	- `—`：后面为注释
+	- `#`：行注释
+	- `/*  …  */`：块注释
+- 排序：`ORDER BY`
+	- **必须是SELECT的最后一个字句**
+	- 可以多列排序
+	- 指定方向：
+		- `DECS`:`..... ORDER BY xxx DECS`
+		- 多列排序时需要在降序的每个列后面分别标明
+		- 默认是`ASC`,一般不写
+		- 大小写和排序的关系取决于数据库设置方式
+			- 字典排序中A和a相同
+- 过滤：
+	- `WHERE`
+		- 运算符：
+			- 不等于：`<>`,`!=`【Access不支持`!=`】
+			- 不小于：`!<`,`>=`
+			- 为NULL：`IS NULL`
+				- 不能用`= NULL`
+			- 中间：`BETWEEN XXX AND XXX`
+		- **`AND`的优先级高于`OR`**
+			- 无论何时，都应该用圆括号来分组区分
+		- `IN`：代替`OR`
+			- `WHERE XXX IN (XX1,XX2)`
+		- `NOT`:
+			- `NOT XXX = XXX`
+			- 大多数DBMS允许NOT否定任何条件
+	- `LIKE`：
+		- `WHERE XXX LIKE XXX`
+		- 通配符：`%`
+			- Access中使用`*`
+			- 是否区分大小写取决于数据库配置
+			- `LIKE '%'`无法匹配`NULL`
+		- 要小心有些字段后面有空格填充，`F%Y`这种匹配要小心
+		- 单个匹配:`_`
+			- DB2不支持
+			- Access中使用`?`
+		- 字符集:`[]`
+			- **只有微软的Access和SQL Server支持**
+			- 脱字符`^`来否定
+				- `Access`要使用`!`
+				- `NOT`可以达到相同效果
+		- **技巧**
+			- 通配符耗时，如果其他操作符可以达到相同目的，应该使用其他操作符
+			- 通配符置于开始处是**最慢**的
+- 计算字段
+	- 拼接：字符串用单引号
+		- `+`：Access，SQL Server
+		- `||`：DB2，Oracle，PostgreSQL，SQLite，Open Office Base
+		- `Concat`：MySQL，MariaDB
+	- 去空格：
+		- `RTRIM()`
+		- `TRIM()`
+		- `LTRIM()`
+	- 别名
+		- `AS`
