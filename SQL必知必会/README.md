@@ -8,7 +8,10 @@
 		- 表明，列值，值可能有所不同，取决于DBMS配置
 	- 检索不同的值：
 		- `SELECT DISTINCT …`
+		- SELECT默认为`ALL`
+		- `DISTINCT`必须使用列名，不能用于计算或表达式
 		- 指定多列时多列同时相同才不会重复检索
+		- Access不支持
 	- 限制结果数目：语法取决于数据库类型
 		- SQL Server & Access：`SELECT TOP 5 XXX FROM XXX`
 		- DB2：`SELECT XXX FROM XXX FETCH FIRST 5 ROWS ONLY`
@@ -22,7 +25,7 @@
 	- **必须是SELECT的最后一个字句**
 	- 可以多列排序
 	- 指定方向：
-		- `DECS`:`..... ORDER BY xxx DECS`
+		- `DECS`:`….. ORDER BY xxx DECS`
 		- 多列排序时需要在降序的每个列后面分别标明
 		- 默认是`ASC`,一般不写
 		- 大小写和排序的关系取决于数据库设置方式
@@ -47,7 +50,7 @@
 		- 通配符：`%`
 			- Access中使用`*`
 			- 是否区分大小写取决于数据库配置
-			- `LIKE '%'`无法匹配`NULL`
+			- `LIKE ‘%’`无法匹配`NULL`
 		- 要小心有些字段后面有空格填充，`F%Y`这种匹配要小心
 		- 单个匹配:`_`
 			- DB2不支持
@@ -65,9 +68,60 @@
 		- `+`：Access，SQL Server
 		- `||`：DB2，Oracle，PostgreSQL，SQLite，Open Office Base
 		- `Concat`：MySQL，MariaDB
-	- 去空格：
-		- `RTRIM()`
-		- `TRIM()`
-		- `LTRIM()`
-	- 别名
+	- 别名/导出列
+		- 可选，最好使用
 		- `AS`
+		- 可以是单词，也可以是字符串(引号包含，但不推荐使用)
+- 函数：SQL函数不可移植
+	- 子串
+		- `MID()`：Access
+		- `SUBSTR()`：DB2，Oracle，PostgreSQL，SQLite
+		- `SUBSTRING()`：MySQL，SQL Server
+	- 数据类型转换
+		- 每种类型自带函数：Access，Oracle
+		- `CAST()`：DB2，PostgreSQL
+		- `CONVERT()`：MariaDB，MySQL，SQL Server
+	- 当前日期
+		- `NOW()`：Access
+		- `CURRENT_DATE`：DB2，PostgreSQL
+		- `CURDATE()`：MariaDB，MySQL
+		- `SYSDATE`：Oracle
+		- `GETDATE()`：SQL Server
+		- `DATE()`：SQLite
+	- 文本处理
+		- `LEFT()`/`RIGHT`
+		- `RTRIM()`/`TRIM()`/`LTRIM()`
+		- `LENGTH()`/`DATALENGTH()`/`LEN()`
+		- `LOWER()`/`UPPER()`
+			- Access：`LCASE`/`UCASE`
+		- `SOUNDEX`：文本转化为语音表示的字母模式
+			- 可以匹配发音相似但拼写错误的名字，比如SOUNDEX(Michelle) = SOUNDEX(Michael)
+			- Access，PostgreSQL不支持
+	- 时间处理
+		- 获取年份
+			- SQL Server：`DATEPART(yy，xxx)`
+			- Access:`DATEPART(‘yyyy’,xxx)`
+			- PostgreSQL:`DATE_PART(‘year’,xxx)`
+			- Oracle:`to_number(to_char(xxx,’YYYY’))`
+			- MySQL,MariaDB:`YEAR()`
+			- SQLite:`strftime(‘%Y’,xxx)`
+	- 数学：
+		- `ABS()`
+		- `COS()`/`SIN()`/`TAN()`
+		- `EXP()`
+		- `PI()`
+		- `SQRT()`
+	- 统计
+		- `AVG()`
+			- 会忽略NULL行
+			- `SELECT AVG(DISTINCT xxx) AS XXXX …`
+		- `COUNT()`
+			- 会忽略NULL行
+			- `COUNT(*)`对表中行的数目进行统计
+			- `COUNT(column)`对表中特定值进行计数
+			- `DISTINCT`不能用于`COUNT(*)`
+		- `MAX()`/`MIN()`
+			- 文本数据时，返回最后/最前的行
+			- 会忽略NULL行
+		- `SUM()`
+			- 可以用于计算段
