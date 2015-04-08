@@ -17,6 +17,7 @@
 		- DB2：`SELECT XXX FROM XXX FETCH FIRST 5 ROWS ONLY`
 		- Oracle：`SELECT XXX FROM XXX WHERE ROWNUM <= 5`
 		- **MySQL**，MariaDB，PostgreSQL，**SQLite**：`SELECT XXX FROM XXX LIMIT 5`
+	- `SELECT`→`FROM`→`WHERE`→`GROUP BY`→`HAVING`→`ORDER BY`
 - 注释
 	- `—`：后面为注释
 	- `#`：行注释
@@ -72,6 +73,8 @@
 		- 可选，最好使用
 		- `AS`
 		- 可以是单词，也可以是字符串(引号包含，但不推荐使用)
+		- Access不支持别名排序
+			- 可以用字段位置替换别名
 - 函数：SQL函数不可移植
 	- 子串
 		- `MID()`：Access
@@ -105,7 +108,7 @@
 			- Oracle:`to_number(to_char(xxx,’YYYY’))`
 			- MySQL,MariaDB:`YEAR()`
 			- SQLite:`strftime(‘%Y’,xxx)`
-	- 数学：
+	- 数学
 		- `ABS()`
 		- `COS()`/`SIN()`/`TAN()`
 		- `EXP()`
@@ -125,3 +128,105 @@
 			- 会忽略NULL行
 		- `SUM()`
 			- 可以用于计算段
+- 分组：GROUP BY
+	- 结果不排序
+	- 规定
+		- 可以包含多列，所以可以实现分组嵌套
+		- 如果分组嵌套，数组在最后指定的分组上进行汇总
+		- 每一列都必须是检索列或有效表达式
+		- **大多数SQL不允许分组可变长度数据类型**
+		- 聚集函数外，SELECT每一列必须出现在GROUP BY中
+			- 分组包含NULL，NULL将作为分组返回
+		- **`WHERE` XXXX `GROUP BY` XXXXX`ORDER BY`**
+	- 过滤分组：`HAVING`
+		- WHERE没有分组的概念
+		- 所有的`WHERE`都可以用`HAVING`来替换
+			- 不指定`GROUP BY`，大部分DBMS同等对待
+			- WHERE:过滤行，分组前过滤
+			- HAVING：过滤分组，分组后过滤
+- 子查询
+	- 只能查询单列
+	- 子查询并不总是检索最快的方式
+- 联结
+	- 关系表：相同的数据不应该出现多次
+	- 必须有`WHERE`
+		- 没有`WHERE`『叉联结』，结果将两个表的笛卡尔积
+	- 内联结/等值联结
+		- 两个表：`SELECT xx1,xx2 FROM tb1 INNER JOIN tb2 ON tb1.id = tb2.id`
+		- 多个表：`SELECT xx1,xx2 FROM tb1,tb2,tb3 WHERE tb1.id = tb2.id AND tb2.name = tb3.name`
+		- 不要联结不必要的表，性能下降
+		- 一般DBMS会对可联结的表的数目有限制
+- 给表起别名
+	- 缩短SQL语句
+	- **允许一条语句中使用多次相同的表**
+	- 可用于`SELECT`,`WHERE`,`ORDER BY`
+	- Oracle不需要写`AS`
+	- 表别名不会返回客户端
+- 高级联结
+	- 自联结
+		- WHERE中用表别名进行判断
+		- 自联结与子查询对比：
+			- 子查询：SELECT xx1,xx2 FROM tb1 WHERE xx2 = (SELECT XX2 FROM tb1 WHERE xx1 = ‘xxx’)
+			- 自联结：SELECT t1.xx1,t1.xx2 FROM tb1 AS t1,tb1 AS t2 WHERE t1.xx2 = t2.xx2 AND t1.xx1 = ‘xxx’
+			- 自联结处理速度快于子查询
+	- 自然联结
+		- 排除多次出现的列		
+	- 外联结
+		- SELECT … FROM … LEFT/RIGHT/FULL OUTER JOIN … ON …
+		- 包含左/右表没关联的行
+		- RIGHT OUTER JOIN：
+			- 不支持SQLite
+			- 解决：换表顺序
+		- FULL OUTER JOIN：
+			- 不支持：Access，MariaDB，MySQL，Open Office Base，SQLite
+- 组合查询
+	- 应用：
+		- 一个查询中从不同表返回数据
+		- 对一个表多次查询，按一次查询返回
+	- SELECT之间加上UNION
+	- 每次查询必须包含相同的列/表达式/聚集函数，次序不必相同
+ 	- UNION可以通过WHERE-AND实现
+	- 自动去除重复行
+		- 不去除需要`UNOIN ALL`
+		- 无法用WHERE-AND实现
+	- 只能使用一条`ORDER BY`,且必须位于最后一条`SELECT`
+	- 特殊UNION
+		- UNION：EXCEPT/MINUS
+			- 第一个表中存在第二个表中不存在的行
+		- INTERSECT
+			- 第一个表中存在第二个表中都出现的行
+		- 少用，相同结果都可以用联结得到
+- 插入数据
+	- OMSERT INTO tb VALUES(xxx,xxx):
+		- 基于位置
+		- 必须提供所有列
+		- 最好不要用
+	- OMSERT INTO tb(xx,xx) VALUES(xxx,xxx)
+		- 可以插入部分行
+		- 省略行
+			- 允许定义NULL
+			- 默认值
+	- INTO可选，为了可移植性，最好提供
+	- INSERT - SELECT:
+		- INSERT INTO tb(xx,xx) SELECT xx,xx FROM tb2
+		- 主键值重复，后续插入失败
+		- 不要求列名匹配
+	- 复制表：
+		- SELECT * INTO tb_2 FROM tb_1
+			- `DB2`不支持
+		- 会自动创建新表
+		- CREATE TABLE tb_2 AS SELECT * FROM tb_1
+			- MariaDB,MySQL,Oracle,PostgreSQL,SQLite
+- 更新数据
+	- **不要省略WHERE！！！**
+	- UPDATE tb SET xx = xxx **WHERE** …
+	- 多个更新列之间逗号隔开
+	- 可以使用子查询
+	- 有些DBMS中UPDATE支持FROM，一个表更新另一个表
+	- 删除列：UPDATE为NULL即可
+- 删除数据	
+	- **不要省略WHERE！！！**
+	- DELETE FROM tb WHERE …
+	- FROM可选，为了可移植性，最好提供
+	- 删除所有行：`TRUNCATE TABLE`更快，不记录数据变动
+	- **删除之前应该用SELECT测试！！**
