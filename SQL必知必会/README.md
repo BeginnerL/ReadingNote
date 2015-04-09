@@ -108,6 +108,14 @@
 			- Oracle:`to_number(to_char(xxx,’YYYY’))`
 			- MySQL,MariaDB:`YEAR()`
 			- SQLite:`strftime(‘%Y’,xxx)`
+		- 获取系统日期
+			- SQL Server：`GETDATE()`
+			- Access:`NOW()`
+			- PostgreSQL:`CURRENT_DATE`
+			- Oracle:`SYSDATE`
+			- MySQL:`CURRENT_DATE()`
+			- SQLite:`date(‘now’)`
+			- DB2:`CURRENT_DATE`
 	- 数学
 		- `ABS()`
 		- `COS()`/`SIN()`/`TAN()`
@@ -230,3 +238,110 @@
 	- FROM可选，为了可移植性，最好提供
 	- 删除所有行：`TRUNCATE TABLE`更快，不记录数据变动
 	- **删除之前应该用SELECT测试！！**
+- 表的操作
+	- CREATE TABLE tb(xx CHAR(10) NOT NULL,
+									xx VARCHAR(10) NULL)
+	- NULL为默认
+	- 语言限制
+		- MySQL中VARCHAR需替换成text
+		- DB2中如为NULL不需写
+	- 指定默认值：`DEFAULT xxx`
+		- 使用默认值比`NULL`好
+	- 增加/删除列
+		- ALTER TABLE tb ADD xxx CHAR(20)
+		- ALTER TABLE tb DROP CLOUMN xxx
+		- 使用前最好备份
+	- 删除表：
+		- DROP TABLE XXX
+	- 重命名表：
+		- RENAME:DB2，MariaDB，MySQL，Oracle，PostgreSQL
+		- sp_rename：SQL Server
+		- ALTER TABLE:SQLite
+- 视图
+	- Access不支持
+	- 应用：
+		- 重用语句
+		- 简化操作
+		- 使用表的一部分而非全部
+		- 保护数据
+		- 更改数据格式和表示
+	- 视图不包含数据
+	- 规则：
+		- 唯一命名
+		- 视图可以嵌套
+		- 许多DBMS禁止视图中使用`ORDER BY`
+		- 视图不可索引，关联触发器和默认值
+		- CREATE VIEW view1 AS SELECT …
+		- DROP VIEW view1
+		- SELECT xxx FROM view1 …
+- 使用存储过程
+	- Access，SQLite不支持
+	- 好处：简单，安全，高性能
+	- 运行：
+		- EXECUTE xxx(para1,para2…)
+- 约束
+	- 主键约束
+		- 列满足以下条件即可定义
+			- 任意两行主键值不同
+			- 每行都有主键值（非NULL）
+			- 主键值列从未被修改
+			- 主键值不可重用
+		- 定义方法：
+			- 参数后面加：`PRIMARY KEY`
+		- 增加方法：
+			- ALTER TABLE xxx ADD CONSTRAINT PRIMARY KEY(xxx)
+			- SQLite不支持ALTER TABLE定义主键/外键，必须建立时完成
+	- 外键约束
+		- 外键是表中的一列，也必须出现在另一张表中的主键
+		- 有助于防止误删
+		- 级联删除：
+			- 删除一表中某行会删除另一表中相关数据
+		- 定义方法：
+			- 参数后面加：`REFERENCES tb2(xxx)`
+		- 增加方法：
+			- ALTER TABLE tb1 ADD CONSTRAINT FORIEGN KEY (xxx1) REFERENCES tb2(xxx2)
+	- 唯一约束
+		- 与主键约束区别：
+			- 一张表可以包含多个唯一约束
+			- 可以包含NULL
+			- 可以更新或修改
+			- 值可以重用
+			- 不可定义外键
+		- 定义方法：
+			- UNIQUE
+	- 检查约束
+		- 常见用途
+			- 检查最小值和最大值
+			- 指定范围
+				- CHECK (xxx > 0)
+			- 只允许特定值
+				- CHECK (gender LIKE ‘[MF]’)
+- 索引
+	- 改善检索性能，降低插入修改删除性能
+	- 占用存储空间
+	- 并非所有数据都适合索引
+	- 索引可定义多个列
+	- CREATE INDEX xxx_idx ON tb(xxx)
+	- 索引名必须唯一
+- 触发器
+	- 与特定表上的INSERT,UPDATE,DELETE关联
+	- 约束比触发器更快
+	- 应用
+		- 保证数据一致
+		- 基于某个表的变动执行其他表的活动
+		- 进行额外验证并根据需要回退数据
+		- 计算计算列的值或更新时间戳
+		- SQL Server:CREATE TRIGGER col 
+								ON tb FOR INSERT,UPDATE 
+								AS 
+								UPDATE tb 
+								SET col = Upper(col) 
+								WHERE tb.xx = inserted.xx
+		- Oracle,PostgreSQL:CREATE TRIGGER col 
+											AFTER INSERT OR UPDATE 
+											FOR EACH ROW 
+											BEGIN
+											UPDATE tb
+											SET col = Upper(col)
+											WHERE tb.xx = :OLD:xx
+											END
