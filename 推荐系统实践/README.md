@@ -97,6 +97,9 @@
 				- 准确度
 				- 多样性
 				- 覆盖率
+	- 哈利波特问题：某一物品太过热门，和太多物品『相似』
+		- 当$N(j)$非常大时：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{\sqrt{|N(i)||N(j)|}}\approx |N(i)|$
+		- 热门物品惩罚：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{|N(i)|^{1-\alpha}|N(j)|^\alpha}$
 - 对比
 	- User-CF
 		- 适用于用户少
@@ -106,11 +109,42 @@
 		- 适用于物品数量少
 		- 长尾物品丰富，个性化需求强烈
 		- 可以给出解释
-- **离线实验性能在选择算法时不起决定性作用**
-	- 产品需求：是否需要解释
-	- 代价：用户数和物品数对比
-	- 离线指标和在线指标不成正比
-	- 两种算法经过优化后离线性能是相近的
-- 哈利波特问题：某一物品太过热门，和太多物品『相似』
-	- 当$N(j)$非常大时：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{\sqrt{|N(i)||N(j)|}}\approx |N(i)|$
-	- 热门物品惩罚：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{|N(i)|^{1-\alpha}|N(j)|^\alpha}$
+	- **离线实验性能在选择算法时不起决定性作用**
+		- 产品需求：是否需要解释
+		- 代价：用户数和物品数对比
+		- 离线指标和在线指标不成正比
+		- 两种算法经过优化后离线性能是相近的
+- 隐语义模型：Latent factor model（LFM）
+	- 用户u对物品i的兴趣： $Preference(u,i)=r_{ui}=p_u^Tq_i=\sum\limits_{k=1}^{K}p_{u,k}q_{i,k}$
+		- $p_{u,k}$：用户u对第k个隐类的关系
+		- $q_{i,k}$：物品i对第k个隐类的关系
+	- 负样本获取原则：
+		- 没有行为的item选取一部分作为负样本
+		- 正负样本数目均衡
+		- 优先选取热门但是用户没有行为的item
+	- $p_{u,k}$，$q_{i,k}$计算：
+		- 最小化损失函数：$$C=\sum\limits_{(u,i)\in K}(r_{ui}-\hat{r}_{ui})^2=\sum\limits_{(u,i)\in K}\left(r_{ui}-\sum\limits_{k=1}^{K}p_{u,k}q_{i,k}\right)^2+\lambda||p_u||^2+\lambda||q_i||^2$$
+		- 最后两项防止过拟合的正则化项
+			- 求解：随机梯度下降法
+				- $\begin{cases}\frac{\partial C}{\partial p_{uk}}=-2q_{ik}\cdot e_{ui}+2\lambda p_{uk} \\ \frac{\partial C}{\partial q_{ik}}=-2p_{uk}\cdot e_{ui}+2\lambda q_{ik}\end{cases}$
+				- 递推公式：$\begin{cases}p_{uk}=p_{uk}+\alpha(q_{ik}\cdot e_{ui}-\lambda p_{uk}) \\ q_{ik}=q_{ik}+\alpha(p_{uk}\cdot e_{ui}-\lambda q_{ik}) \end{cases}$
+	- 重要参数：
+		- 隐特征个数
+		- 学习速率$\alpha$
+		- 正则化参数$\lambda$
+		- **正负样本比例**（影响最严重）
+	- 无法实时推荐
+- 基于图模型
+	- 顶点间的相关性度量（相关性强度大的特征）：
+		- 顶点之间路径数（多）
+		- 顶点之间路径长度（短）
+		- 顶点之间经过的顶点（不会出现出度比较大的点）
+	- 随机游走PersonalRank算法：
+		- 从用户顶点开始随机游走，每次根据$\alpha$概率决定继续随机游走还是从头开始，经过多次随机游走，物品被访问的概率会收敛
+		- $PR(v)=\begin{cases}\alpha\sum\limits_{v\prime\in in(v)}\frac{PR(v\prime)}{|out(v\prime)|} & (v\neq v_u) \\ (1-\alpha)+\alpha\sum\limits_{v\prime\in in(v)}\frac{PR(v\prime)}{|out(v\prime)|} & (v = v_u) \end{cases}$
+		- 等效转移概率矩阵
+			- $M(v,v\prime)=\frac{1}{|out(v)|}$
+			- 迭代公式：$r=(1-\alpha)r_0+\alpha M^Tr$
+			- 迭代公式求解结果：$r=(1-\alpha)(1-\alpha M^T)^{-1}r_0$
+			- 只需计算一次$(1-\alpha M^T)^{-1}$，其中$1-\alpha M^T$为洗漱矩阵，可以有方法快速求逆
+	- 无法实时推荐
