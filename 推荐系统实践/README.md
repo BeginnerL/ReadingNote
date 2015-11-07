@@ -182,3 +182,33 @@
 			- 强内容特征非常重要性
 	- 系统冷启动：没用户，没行为，只有物品
 		- 专家标注
+- 用户标签
+	- 用户打标行为：长尾分布
+	- 推荐系统
+		- 步骤：找到用户常用标签，推荐找到该标签热门物品
+		- $p(u,i)=\sum\limits_{b}n_{u,b}n_{b,i}$
+			- $n_{u,b}$：用户u打过标签b的次数
+			- $n_{b,i}$：物品i被打过标签b的次数
+		- 问题：推荐热门，缺乏新颖性
+		- 改进：
+			- TagBasedTFIDF算法：
+				- $p(u,i)=\sum\limits_{b}\frac{n_{u,b}}{\log (1+n_b^{(u)})}n_{b,i}$
+					- $n_b^{(u)}$：标签b被多少个不用的用户打过
+			- TagBasedTFIDF++算法：
+				- $p(u,i)=\sum\limits_{b}\frac{n_{u,b}}{\log (1+n_b^{(u)})}\frac{n_{b,i}}{\log (1+n_i^{(u)})}$
+					- $n_i^{(u)}$：物品i被多少个不用的用户打过标签
+				- 相比TagBasedTFIDF算法，除多样性会下降，其他指标都提高明显
+	- 数据稀疏：
+		- 同义词扩展：$sim(b,b\prime)=\frac{\sum\limits_{i\in N(b)\cap N(b\prime)}n_{b,i}n_{b\prime,i}}{\sqrt{\sum\limits_{i\in N(b)}n^2_{b,i}\sum\limits_{i\in N(b\prime)}n^2_{b\prime,i}}}$
+	- 标签清理
+	- 基于图的推荐
+		- $P(i~|~u)=\sum_bp(i~|~b)P(b~|~u)$
+		- SimpleTagGraph: User→Tag→Item
+		- 计算：PersonalRank
+	- 给用户推荐标签：
+		- 作用：
+			- 方便用户输入
+			- 提高标签质量
+		- 算法：融合用户的常用标签和物品的热门标签
+		- 基于图的算法：
+			- 顶点启动概率$r_{v(k)}=\left\{\begin{align*}  \alpha &~~~~~ v(k)=v(u) \\ 1-\alpha     &~~~~~  v(k)=v(i) \\ 0&~~~~~other    \label{equ_xxx}\end{align*}\right.$
