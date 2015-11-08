@@ -1,214 +1,260 @@
 # 推荐系统实践
 
 - 评测指标
-	- 用户满意度
-	- 预测准确度
-		- 评分预测（显性）
-			- 均方根误差:$RMSE=\sqrt{\dfrac{\sum_{u,i\in T}(r_{ui}-\hat{r}_{ui})^2}{|T|}}$
-				- $u$：user
-				- $i$：item
-				- $r_{ui}$：实际评分
-				- $\hat{r}_{ui}$：预测评分
-				- 加大了对预测不准用户物品的评分惩罚
-			- 平均绝对误差:$MAE=\dfrac{\sum_{u,i\in T}|r_{ui}-\hat{r}_{ui}|}{|T|}$
-		- TopN推荐
-			- 度量：准确率/召回率
-	- 覆盖率：
-		- 推荐物品占总物品比例
-		- 强长尾挖掘能力：所有物品都出现，而且次数差不多
-			- 信息熵:$H=-\sum\limits^n_{i-1}p(i)\log p(i)$
-				- $p(i)$：物品$i$的流行度/所有物品流行度之和
-			- 基尼系数:$G=\dfrac{1}{n-1}\sum\limits_{j=1}^n(2j-n-1)p(i_j)$
-				- $i_j$：按物品流行度$p()$从小到大排序的物品列表中第$j$个物品
-				- 判断马太效应：
-					- G1：用户初始行为计算出来的物品流行度基尼系数
-					- G2：推荐列表计算出来的物品流行度基尼系数
-					- G2>G1→推荐算法有马太效应
-	- 多样性：推荐列表中两两物品之间的**不**相似性
-		- $Diversity(R(u)) = 1-\frac{\sum_{i,j\in R(u),~i\neq j}s(i,j)}{\frac{1}{2}|R(u)|(|R(u)|-1)}$
-		- $s(i,j)$：物品相似度
-		- 推荐系统整体多样性：$Diversity=\frac{1}{|U|}\sum\limits_{u\in U}Diversity(R(u))$
-	- 新颖性：滤除以前有过行为的物品
-	- 惊喜度：不明白为什么会被推荐，但是却很满意的推荐
-	- 信任度
-		- 度量方式：询问用户
-		- 提高方式
-			- 增加推荐系统透明度：**推荐解释**
-	- 实时性：
-		- 感知用户行为
-		- 感知新物品
-	- 健壮性：防止人为作弊
-		- 使用作弊代价较高的用户行为
-		- 自己进行攻击检测，清理数据
-	- 商业目标
+    - 用户满意度
+    - 预测准确度
+        - 评分预测（显性）
+            - 均方根误差:$RMSE=\sqrt{\dfrac{\sum_{u,i\in T}(r_{ui}-\hat{r}_{ui})^2}{|T|}}$
+                - $u$：user
+                - $i$：item
+                - $r_{ui}$：实际评分
+                - $\hat{r}_{ui}$：预测评分
+                - 加大了对预测不准用户物品的评分惩罚
+            - 平均绝对误差:$MAE=\dfrac{\sum_{u,i\in T}|r_{ui}-\hat{r}_{ui}|}{|T|}$
+        - TopN推荐
+            - 度量：准确率/召回率
+    - 覆盖率：
+        - 推荐物品占总物品比例
+        - 强长尾挖掘能力：所有物品都出现，而且次数差不多
+            - 信息熵:$H=-\sum\limits^n_{i-1}p(i)\log p(i)$
+                - $p(i)$：物品$i$的流行度/所有物品流行度之和
+            - 基尼系数:$G=\dfrac{1}{n-1}\sum\limits_{j=1}^n(2j-n-1)p(i_j)$
+                - $i_j$：按物品流行度$p()$从小到大排序的物品列表中第$j$个物品
+                - 判断马太效应：
+                    - G1：用户初始行为计算出来的物品流行度基尼系数
+                    - G2：推荐列表计算出来的物品流行度基尼系数
+                    - G2>G1→推荐算法有马太效应
+    - 多样性：推荐列表中两两物品之间的**不**相似性
+        - $Diversity(R(u)) = 1-\frac{\sum_{i,j\in R(u),~i\neq j}s(i,j)}{\frac{1}{2}|R(u)|(|R(u)|-1)}$
+        - $s(i,j)$：物品相似度
+        - 推荐系统整体多样性：$Diversity=\frac{1}{|U|}\sum\limits_{u\in U}Diversity(R(u))$
+    - 新颖性：滤除以前有过行为的物品
+    - 惊喜度：不明白为什么会被推荐，但是却很满意的推荐
+    - 信任度
+        - 度量方式：询问用户
+        - 提高方式
+            - 增加推荐系统透明度：**推荐解释**
+    - 实时性：
+        - 感知用户行为
+        - 感知新物品
+    - 健壮性：防止人为作弊
+        - 使用作弊代价较高的用户行为
+        - 自己进行攻击检测，清理数据
+    - 商业目标
 - 用户行为
-	- 显性反馈：
-		- 点赞等
-		- 用户兴趣明确
-		- 数量少
-		- 实时
-		- 正负反馈都有
-	- 隐性反馈：
-		- 浏览
-		- 用户兴趣不明确
-		- 数量多
-		- 有延迟
-		- 只有正反馈
-	- 活跃度与流行度：
-		- 新用户倾向于浏览大流行度的东西
-		- 老用户逐渐开始浏览冷门的物品
+    - 显性反馈：
+        - 点赞等
+        - 用户兴趣明确
+        - 数量少
+        - 实时
+        - 正负反馈都有
+    - 隐性反馈：
+        - 浏览
+        - 用户兴趣不明确
+        - 数量多
+        - 有延迟
+        - 只有正反馈
+    - 活跃度与流行度：
+        - 新用户倾向于浏览大流行度的东西
+        - 老用户逐渐开始浏览冷门的物品
 - user-CF
-	- 耗时：
-		- 瓶颈：需要计算两两之间相似度
-		- 优化：大部分用户之间并没有相同物品的行为
-		- 方案：建立item到user的倒排表
-	- 预测：$p(u,i)=\sum\limits_{v\in S(u,K)\cap N(i)}w_{uv}r_{vi}$
-		- $S(u,K)$：和u兴趣相近的K个用户
-			- K的影响：
-				- 召回率和准确率不和K呈线性关系
-				- K约大流行度越大（参考的人变多）
-				- K越大覆盖率越低
-		- $N(i)$：对物品i有过行为的用户集合
-		- $w_{uv}$：用户u和v的相似度
-		- $r_{vi}$：用户v对i的兴趣
-	- 相似度：
-		- Jaccard：$w_{uv}=\frac{|N(u)|\cap |N(v)|}{|N(u)|\cup |N(v)|}$
-		- 余弦：$w_{uv}=\frac{|N(u)|\cap |N(v)|}{\sqrt{|N(u)||N(v)|}}$
-		- 改进：对冷门物品有行为更加说明兴趣相似
-			- $w_{uv}=\frac{\sum\limits_{i\in N(u)\cap N(v)}\frac{1}{\log (1+|N(i)|)}}{\sqrt{|N(u)||N(v)|}}$
-				- $\frac{1}{\log (1+|N(i)|)}$惩罚了用户u和v共同兴趣列表中热门物品对相似度的影响
+    - 耗时：
+        - 瓶颈：需要计算两两之间相似度
+        - 优化：大部分用户之间并没有相同物品的行为
+        - 方案：建立item到user的倒排表
+    - 预测：$p(u,i)=\sum\limits_{v\in S(u,K)\cap N(i)}w_{uv}r_{vi}$
+        - $S(u,K)$：和u兴趣相近的K个用户
+            - K的影响：
+                - 召回率和准确率不和K呈线性关系
+                - K约大流行度越大（参考的人变多）
+                - K越大覆盖率越低
+        - $N(i)$：对物品i有过行为的用户集合
+        - $w_{uv}$：用户u和v的相似度
+        - $r_{vi}$：用户v对i的兴趣
+    - 相似度：
+        - Jaccard：$w_{uv}=\frac{|N(u)|\cap |N(v)|}{|N(u)|\cup |N(v)|}$
+        - 余弦：$w_{uv}=\frac{|N(u)|\cap |N(v)|}{\sqrt{|N(u)||N(v)|}}$
+        - 改进：对冷门物品有行为更加说明兴趣相似
+            - $w_{uv}=\frac{\sum\limits_{i\in N(u)\cap N(v)}\frac{1}{\log (1+|N(i)|)}}{\sqrt{|N(u)||N(v)|}}$
+                - $\frac{1}{\log (1+|N(i)|)}$惩罚了用户u和v共同兴趣列表中热门物品对相似度的影响
 - item-CF
-	- 相似度：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{\sqrt{|N(i)||N(j)|}}$
-		- $N(i)$：喜欢i的用户数
-		- 实现：建立user到item倒排表
-	- 预测1：$p_{uj}=\sum\limits_{i\in N(u)\cap S(j,K)}w_{ij}r_{ui}$
-		- $N(u)$：用户喜欢物品的集合
-		- $S(j,K)$：与物品j最相似的K个物品
-			- K的影响：
-				- 准确率和召回率不和K正相关或负相关
-				- 流行度一开始随着K增加而增加，到一定程度后就不会再有显著变化
-				- 覆盖率随着K增加会降低
-		- 改进：Inverse User Frequence（IUF）
-			- 活跃用户对物品相似度的贡献应该小于不活跃用户的
-			- $w_{ij}=\frac{\sum\limits_{u\in N(i)\cap N(j)}\frac{1}{\log (1+|N(u)|)}}{\sqrt{|N(i)||N(j)|}}$
-		- 改进2：忽略过度活跃用户
-		- 改进3：相似度归一化$\hat{w}_{ij}=\frac{w_{ij}}{\max\limits_j w_{ij}}$
-			- 可以提高：
-				- 准确度
-				- 多样性
-				- 覆盖率
-	- 哈利波特问题：某一物品太过热门，和太多物品『相似』
-		- 当$N(j)$非常大时：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{\sqrt{|N(i)||N(j)|}}\approx |N(i)|$
-		- 热门物品惩罚：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{|N(i)|^{1-\alpha}|N(j)|^\alpha}$
+    - 相似度：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{\sqrt{|N(i)||N(j)|}}$
+        - $N(i)$：喜欢i的用户数
+        - 实现：建立user到item倒排表
+    - 预测1：$p_{uj}=\sum\limits_{i\in N(u)\cap S(j,K)}w_{ij}r_{ui}$
+        - $N(u)$：用户喜欢物品的集合
+        - $S(j,K)$：与物品j最相似的K个物品
+            - K的影响：
+                - 准确率和召回率不和K正相关或负相关
+                - 流行度一开始随着K增加而增加，到一定程度后就不会再有显著变化
+                - 覆盖率随着K增加会降低
+        - 改进：Inverse User Frequence（IUF）
+            - 活跃用户对物品相似度的贡献应该小于不活跃用户的
+            - $w_{ij}=\frac{\sum\limits_{u\in N(i)\cap N(j)}\frac{1}{\log (1+|N(u)|)}}{\sqrt{|N(i)||N(j)|}}$
+        - 改进2：忽略过度活跃用户
+        - 改进3：相似度归一化$\hat{w}_{ij}=\frac{w_{ij}}{\max\limits_j w_{ij}}$
+            - 可以提高：
+                - 准确度
+                - 多样性
+                - 覆盖率
+    - 哈利波特问题：某一物品太过热门，和太多物品『相似』
+        - 当$N(j)$非常大时：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{\sqrt{|N(i)||N(j)|}}\approx |N(i)|$
+        - 热门物品惩罚：$w_{ij}=\frac{|N(i)|\cap |N(j)|}{|N(i)|^{1-\alpha}|N(j)|^\alpha}$
 - 对比
-	- User-CF
-		- 适用于用户少
-		- 时效性强，用户个性化兴趣不明显（比如新闻）
-		- 很难提供令用户信服的解释
-	- Item-CF
-		- 适用于物品数量少
-		- 长尾物品丰富，个性化需求强烈
-		- 可以给出解释
-	- **离线实验性能在选择算法时不起决定性作用**
-		- 产品需求：是否需要解释
-		- 代价：用户数和物品数对比
-		- 离线指标和在线指标不成正比
-		- 两种算法经过优化后离线性能是相近的
+    - User-CF
+        - 适用于用户少
+        - 时效性强，用户个性化兴趣不明显（比如新闻）
+        - 很难提供令用户信服的解释
+    - Item-CF
+        - 适用于物品数量少
+        - 长尾物品丰富，个性化需求强烈
+        - 可以给出解释
+    - **离线实验性能在选择算法时不起决定性作用**
+        - 产品需求：是否需要解释
+        - 代价：用户数和物品数对比
+        - 离线指标和在线指标不成正比
+        - 两种算法经过优化后离线性能是相近的
 - 隐语义模型：Latent factor model（LFM）
-	- 用户u对物品i的兴趣： $Preference(u,i)=r_{ui}=p_u^Tq_i=\sum\limits_{k=1}^{K}p_{u,k}q_{i,k}$
-		- $p_{u,k}$：用户u对第k个隐类的关系
-		- $q_{i,k}$：物品i对第k个隐类的关系
-	- 负样本获取原则：
-		- 没有行为的item选取一部分作为负样本
-		- 正负样本数目均衡
-		- 优先选取热门但是用户没有行为的item
-	- $p_{u,k}$，$q_{i,k}$计算：
-		- 最小化损失函数：$$C=\sum\limits_{(u,i)\in K}(r_{ui}-\hat{r}_{ui})^2=\sum\limits_{(u,i)\in K}\left(r_{ui}-\sum\limits_{k=1}^{K}p_{u,k}q_{i,k}\right)^2+\lambda||p_u||^2+\lambda||q_i||^2$$
-		- 最后两项防止过拟合的正则化项
-			- 求解：随机梯度下降法
-				- $\begin{cases}\frac{\partial C}{\partial p_{uk}}=-2q_{ik}\cdot e_{ui}+2\lambda p_{uk} \\ \frac{\partial C}{\partial q_{ik}}=-2p_{uk}\cdot e_{ui}+2\lambda q_{ik}\end{cases}$
-				- 递推公式：$\begin{cases}p_{uk}=p_{uk}+\alpha(q_{ik}\cdot e_{ui}-\lambda p_{uk}) \\ q_{ik}=q_{ik}+\alpha(p_{uk}\cdot e_{ui}-\lambda q_{ik}) \end{cases}$
-	- 重要参数：
-		- 隐特征个数
-		- 学习速率$\alpha$
-		- 正则化参数$\lambda$
-		- **正负样本比例**（影响最严重）
-	- 无法实时推荐
+    - 用户u对物品i的兴趣： $Preference(u,i)=r_{ui}=p_u^Tq_i=\sum\limits_{k=1}^{K}p_{u,k}q_{i,k}$
+        - $p_{u,k}$：用户u对第k个隐类的关系
+        - $q_{i,k}$：物品i对第k个隐类的关系
+    - 负样本获取原则：
+        - 没有行为的item选取一部分作为负样本
+        - 正负样本数目均衡
+        - 优先选取热门但是用户没有行为的item
+    - $p_{u,k}$，$q_{i,k}$计算：
+        - 最小化损失函数：$$C=\sum\limits_{(u,i)\in K}(r_{ui}-\hat{r}_{ui})^2=\sum\limits_{(u,i)\in K}\left(r_{ui}-\sum\limits_{k=1}^{K}p_{u,k}q_{i,k}\right)^2+\lambda||p_u||^2+\lambda||q_i||^2$$
+        - 最后两项防止过拟合的正则化项
+            - 求解：随机梯度下降法
+                - $\begin{cases}\frac{\partial C}{\partial p_{uk}}=-2q_{ik}\cdot e_{ui}+2\lambda p_{uk} \\ \frac{\partial C}{\partial q_{ik}}=-2p_{uk}\cdot e_{ui}+2\lambda q_{ik}\end{cases}$
+                - 递推公式：$\begin{cases}p_{uk}=p_{uk}+\alpha(q_{ik}\cdot e_{ui}-\lambda p_{uk}) \\ q_{ik}=q_{ik}+\alpha(p_{uk}\cdot e_{ui}-\lambda q_{ik}) \end{cases}$
+    - 重要参数：
+        - 隐特征个数
+        - 学习速率$\alpha$
+        - 正则化参数$\lambda$
+        - **正负样本比例**（影响最严重）
+    - 无法实时推荐
 - 基于图模型
-	- 顶点间的相关性度量（相关性强度大的特征）：
-		- 顶点之间路径数（多）
-		- 顶点之间路径长度（短）
-		- 顶点之间经过的顶点（不会出现出度比较大的点）
-	- 随机游走PersonalRank算法：
-		- 从用户顶点开始随机游走，每次根据$\alpha$概率决定继续随机游走还是从头开始，经过多次随机游走，物品被访问的概率会收敛
-		- $PR(v)=\begin{cases}\alpha\sum\limits_{v\prime\in in(v)}\frac{PR(v\prime)}{|out(v\prime)|} & (v\neq v_u) \\ (1-\alpha)+\alpha\sum\limits_{v\prime\in in(v)}\frac{PR(v\prime)}{|out(v\prime)|} & (v = v_u) \end{cases}$
-		- 等效转移概率矩阵
-			- $M(v,v\prime)=\frac{1}{|out(v)|}$
-			- 迭代公式：$r=(1-\alpha)r_0+\alpha M^Tr$
-			- 迭代公式求解结果：$r=(1-\alpha)(1-\alpha M^T)^{-1}r_0$
-			- 只需计算一次$(1-\alpha M^T)^{-1}$，其中$1-\alpha M^T$为洗漱矩阵，可以有方法快速求逆
-	- 无法实时推荐
+    - 顶点间的相关性度量（相关性强度大的特征）：
+        - 顶点之间路径数（多）
+        - 顶点之间路径长度（短）
+        - 顶点之间经过的顶点（不会出现出度比较大的点）
+    - 随机游走PersonalRank算法：
+        - 从用户顶点开始随机游走，每次根据$\alpha$概率决定继续随机游走还是从头开始，经过多次随机游走，物品被访问的概率会收敛
+        - $PR(v)=\begin{cases}\alpha\sum\limits_{v\prime\in in(v)}\frac{PR(v\prime)}{|out(v\prime)|} & (v\neq v_u) \\ (1-\alpha)+\alpha\sum\limits_{v\prime\in in(v)}\frac{PR(v\prime)}{|out(v\prime)|} & (v = v_u) \end{cases}$
+        - 等效转移概率矩阵
+            - $M(v,v\prime)=\frac{1}{|out(v)|}$
+            - 迭代公式：$r=(1-\alpha)r_0+\alpha M^Tr$
+            - 迭代公式求解结果：$r=(1-\alpha)(1-\alpha M^T)^{-1}r_0$
+            - 只需计算一次$(1-\alpha M^T)^{-1}$，其中$1-\alpha M^T$为洗漱矩阵，可以有方法快速求逆
+    - 无法实时推荐
 - 冷启动
-	- 用户冷启动：新注册用户如何个性化推荐
-		- 非个性化推荐
-		- 利用注册信息：
-			- 步骤：
-				- 获取用户注册信息
-				- 根据注册信息进行分类
-				- 推荐所属类别物品
-			- 注册信息
-				- 人口统计信息：年龄，性别，职业，民族，学历，居住地
-				- 用户兴趣：文字描述
-				- 其他网站导入：社交网络账户登录
-			- 预测：
-				- $p(f,i)=\frac{|N(i)\cap |U(f)|}{|N(i)|+\alpha}$
-					- $p(f,i)$：特征f对物品i的喜好程度
-					- $N(i)$：喜欢i的用户集合
-					- $U(f)$：具有特征f的用户集合
-					- $\alpha$：解决数据稀疏问题，防止特征f只有少数人导致$f(f,i)=1$
-		- 登录时要求用户对一些物品反馈，然后推荐相似
-			- 选择物品：
-				- 热门
-				- 具有代表性和区分性
-				- 多样性（比如可以优先给类别）
-	- 物品冷启动：如何新物品推荐
-		- 考虑物品内容信息
-			- 分词，生成关键词向量$d_i=({(e_1,w_1),(e_2,w_2),…})$
-				- TF-IDF计算权重：$w_i=\frac{TF(e_i)}{\log DF(e_i)}$
-			- 相似度计算:$w_{ij}=\frac{d_i\cdot d_j}{\sqrt{||d_i||~||d_j||}}$
-		- 性能：
-			- 准确率召回率低于Item-CF
-			- 新颖度比较高
-			- 强内容特征非常重要性
-	- 系统冷启动：没用户，没行为，只有物品
-		- 专家标注
+    - 用户冷启动：新注册用户如何个性化推荐
+        - 非个性化推荐
+        - 利用注册信息：
+            - 步骤：
+                - 获取用户注册信息
+                - 根据注册信息进行分类
+                - 推荐所属类别物品
+            - 注册信息
+                - 人口统计信息：年龄，性别，职业，民族，学历，居住地
+                - 用户兴趣：文字描述
+                - 其他网站导入：社交网络账户登录
+            - 预测：
+                - $p(f,i)=\frac{|N(i)\cap |U(f)|}{|N(i)|+\alpha}$
+                    - $p(f,i)$：特征f对物品i的喜好程度
+                    - $N(i)$：喜欢i的用户集合
+                    - $U(f)$：具有特征f的用户集合
+                    - $\alpha$：解决数据稀疏问题，防止特征f只有少数人导致$f(f,i)=1$
+        - 登录时要求用户对一些物品反馈，然后推荐相似
+            - 选择物品：
+                - 热门
+                - 具有代表性和区分性
+                - 多样性（比如可以优先给类别）
+    - 物品冷启动：如何新物品推荐
+        - 考虑物品内容信息
+            - 分词，生成关键词向量$d_i=({(e_1,w_1),(e_2,w_2),...})$
+                - TF-IDF计算权重：$w_i=\frac{TF(e_i)}{\log DF(e_i)}$
+            - 相似度计算:$w_{ij}=\frac{d_i\cdot d_j}{\sqrt{||d_i||~||d_j||}}$
+        - 性能：
+            - 准确率召回率低于Item-CF
+            - 新颖度比较高
+            - 强内容特征非常重要性
+    - 系统冷启动：没用户，没行为，只有物品
+        - 专家标注
 - 用户标签
-	- 用户打标行为：长尾分布
-	- 推荐系统
-		- 步骤：找到用户常用标签，推荐找到该标签热门物品
-		- $p(u,i)=\sum\limits_{b}n_{u,b}n_{b,i}$
-			- $n_{u,b}$：用户u打过标签b的次数
-			- $n_{b,i}$：物品i被打过标签b的次数
-		- 问题：推荐热门，缺乏新颖性
-		- 改进：
-			- TagBasedTFIDF算法：
-				- $p(u,i)=\sum\limits_{b}\frac{n_{u,b}}{\log (1+n_b^{(u)})}n_{b,i}$
-					- $n_b^{(u)}$：标签b被多少个不用的用户打过
-			- TagBasedTFIDF++算法：
-				- $p(u,i)=\sum\limits_{b}\frac{n_{u,b}}{\log (1+n_b^{(u)})}\frac{n_{b,i}}{\log (1+n_i^{(u)})}$
-					- $n_i^{(u)}$：物品i被多少个不用的用户打过标签
-				- 相比TagBasedTFIDF算法，除多样性会下降，其他指标都提高明显
-	- 数据稀疏：
-		- 同义词扩展：$sim(b,b\prime)=\frac{\sum\limits_{i\in N(b)\cap N(b\prime)}n_{b,i}n_{b\prime,i}}{\sqrt{\sum\limits_{i\in N(b)}n^2_{b,i}\sum\limits_{i\in N(b\prime)}n^2_{b\prime,i}}}$
-	- 标签清理
-	- 基于图的推荐
-		- $P(i~|~u)=\sum_bp(i~|~b)P(b~|~u)$
-		- SimpleTagGraph: User→Tag→Item
-		- 计算：PersonalRank
-	- 给用户推荐标签：
-		- 作用：
-			- 方便用户输入
-			- 提高标签质量
-		- 算法：融合用户的常用标签和物品的热门标签
-		- 基于图的算法：
-			- 顶点启动概率$r_{v(k)}=\left\{\begin{align*}  \alpha &~~~~~ v(k)=v(u) \\ 1-\alpha     &~~~~~  v(k)=v(i) \\ 0&~~~~~other    \label{equ_xxx}\end{align*}\right.$
+    - 用户打标行为：长尾分布
+    - 推荐系统
+        - 步骤：找到用户常用标签，推荐找到该标签热门物品
+        - $p(u,i)=\sum\limits_{b}n_{u,b}n_{b,i}$
+            - $n_{u,b}$：用户u打过标签b的次数
+            - $n_{b,i}$：物品i被打过标签b的次数
+        - 问题：推荐热门，缺乏新颖性
+        - 改进：
+            - TagBasedTFIDF算法：
+                - $p(u,i)=\sum\limits_{b}\frac{n_{u,b}}{\log (1+n_b^{(u)})}n_{b,i}$
+                    - $n_b^{(u)}$：标签b被多少个不用的用户打过
+            - TagBasedTFIDF++算法：
+                - $p(u,i)=\sum\limits_{b}\frac{n_{u,b}}{\log (1+n_b^{(u)})}\frac{n_{b,i}}{\log (1+n_i^{(u)})}$
+                    - $n_i^{(u)}$：物品i被多少个不用的用户打过标签
+                - 相比TagBasedTFIDF算法，除多样性会下降，其他指标都提高明显
+    - 数据稀疏：
+        - 同义词扩展：$sim(b,b\prime)=\frac{\sum\limits_{i\in N(b)\cap N(b\prime)}n_{b,i}n_{b\prime,i}}{\sqrt{\sum\limits_{i\in N(b)}n^2_{b,i}\sum\limits_{i\in N(b\prime)}n^2_{b\prime,i}}}$
+    - 标签清理
+    - 基于图的推荐
+        - $P(i~|~u)=\sum_bp(i~|~b)P(b~|~u)$
+        - SimpleTagGraph: User→Tag→Item
+        - 计算：PersonalRank
+    - 给用户推荐标签：
+        - 作用：
+            - 方便用户输入
+            - 提高标签质量
+        - 算法：融合用户的常用标签和物品的热门标签
+        - 基于图的算法：
+            - 顶点启动概率$r_{v(k)}=\left\{\begin{align*}  \alpha &~~~~~ v(k)=v(u) \\ 1-\alpha     &~~~~~  v(k)=v(i) \\ 0&~~~~~other    \label{equ_xxx}\end{align*}\right.$
+- 利用上下文
+	- 时间上下文信息：
+		- 影响
+			- 用户兴趣变化
+			- 物品生命周期 
+			- 季节效应
+		- 物品生存周期衡量：
+			- 物品平均在线天数：
+				- 横坐标：流行度
+				- 纵坐标：在线天数
+				- 时效性：斜率
+			- 间隔T天系统物品流行度向量的平均相似度
+		- 推荐系统：
+			- 实时性：实时接收反馈
+			- 时间多样性：每天不一样
+			- 方法：
+				- 增加随机性
+				- 记录每天看到的推荐结果，之后适当降权
+				- 多种算法随机
+		- 推荐算法：
+			- 最近最热门：$n_i(T)=\sum\limits_{(u,i,t)\in Train,t<T}\frac{1}{1+\alpha(T-t)}$
+				- $n_i(T)$：最近流行度
+				- $\alpha$：衰减
+			- 基于时间上下文的Item-CF
+				- 物品相似度：短期内有行为的权重更高
+				- 旧算法：
+					- $sim(i,j)=\frac{\sum\limits_{u\in N(i)\cap N(j)}\frac{1}{\log (1+|N(u)|)}}{\sqrt{|N(i)||N(j)|}}$
+					- $p(u,i)=\sum\limits_{j\in N(u)}sim(i,j)$
+				- 改进：
+					- $sim(i,j)=\frac{\sum\limits_{u\in N(i)\cap N(j)}f\left(|t_{ui}-t_{uj}|\right)}{\sqrt{|N(i)||N(j)|}}$
+					- $t_{ui}$：用户对物品产生行为的时间
+					- $f\left(|t_{ui}-t_{uj}|\right)=\frac{1}{1+\alpha\left|t_{ui}-t_{uj}\right|}$
+					- $p(u,i)=\sum\limits_{j\in N(u)}sim(i,j)\frac{1}{1+\beta\left|t_{0}-t_{uj}\right|}$
+			- 基于时间上下文的User-CF
+				- 推荐兴趣相似的用户最近喜欢的物品
+				- 旧算法：
+					- $w_{uv}=\frac{|N(u)|\cap |N(v)|}{\sqrt{|N(u)||N(v)|}}$
+					- $p(u,i)=\sum\limits_{v\in S(u,k)}w_{uv}r_{vi}$
+				- 新算法：
+					- $w_{uv}=\frac{\sum\limits_{i\in N(u)\cap N(v)}\frac{1}{1+\alpha\left|t_{ui}-t_{vi}\right|}}{\sqrt{|N(u)||N(v)|}}$ 
+					- $p(u,i)=\sum\limits_{v\in S(u,k)}w_{uv}r_{vi}\frac{1}{1+\alpha\left|t_{0}-t_{vi}\right|}$
+			- 时间段图模型
+				- 暂略
+		- 地点上下文信息
+			- 兴趣本地化
+			- 活动本地化
