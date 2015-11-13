@@ -173,7 +173,7 @@
                 - 多样性（比如可以优先给类别）
     - 物品冷启动：如何新物品推荐
         - 考虑物品内容信息
-            - 分词，生成关键词向量$d_i=({(e_1,w_1),(e_2,w_2),...})$
+            - 分词，生成关键词向量$d_i=({(e_1,w_1),(e_2,w_2),…})$
                 - TF-IDF计算权重：$w_i=\frac{TF(e_i)}{\log DF(e_i)}$
             - 相似度计算:$w_{ij}=\frac{d_i\cdot d_j}{\sqrt{||d_i||~||d_j||}}$
         - 性能：
@@ -404,4 +404,67 @@
 				- 余弦：$w_{ij}=\frac{\sum_{u\in U}r_{ui}\cdot r_{uj}}{\sqrt{\sum_{u\in U}r_{ui}^2 \sum_{u\in U}r_{uj}^2}}$
 				- 皮尔逊：$w_{ij}=\frac{\sum_{u\in U}(r_{ui}-\bar{r}_i)\cdot (r_{uj}-\bar{r}_j)}{\sqrt{\sum_{u\in U}(r_{ui}-\bar{r}_i)^2 \sum_{u\in U}(r_{uj}-\bar{r}_j)^2}}$
 				- 修正余弦(效果较好)：$w_{ij}=\frac{\sum_{u\in U}(r_{ui}-\bar{r}_u)\cdot (r_{uj}-\bar{r}_u)}{\sqrt{\sum_{u\in U}(r_{ui}-\bar{r}_u)^2 \sum_{u\in U}(r_{uj}-\bar{r}_u)^2}}$
-				- 
+	- 隐语意模型和矩阵分解模型
+		- 传统SVD：
+			- m个用户，n个物品评分矩阵$R \in \Re^{m\times n}$
+			- 补全缺失值得到$R\prime$
+			- SVD分解:$R\prime=U^TSV$
+				- $U\in\Re^{k\times m}$
+				- $V\in\Re^{k\times n}$
+				- $S\in\Re^{k\times k}$，对角阵
+			- 对$R\prime$降维：
+				- 找出最大奇异值组成的对角阵$S_f$
+				- 找到$U$，$V$对应行和列$U_f$，$V_f$
+				- 得到降维评分矩阵$R\prime_f=U_f^TS_fV_f$
+			- 缺点：
+				- 需要补全评分矩阵，补全后存储要求太高
+				- SVD分解计算复杂度太高
+		- LFM
+			- $\hat{R}=P^TQ$
+				- $P\in\Re^{f\times m}$
+				- $Q\in\Re^{f\times n}$
+			- $\hat{r}_{ui}=\hat{R}(u,i)=\sum\limits_fp_{uf}q_{if}$
+			- 训练：
+				- 损失函数：$C(p,q)=\sum\limits_{(u,i)\in\text{Train}}(r_{ui}-\hat{r}_{ui})^2=\sum\limits_{(u,i)\in\text{Train}}\left(r_{ui}-\sum\limits_f^Fp_{uf}q_{if}\right)^2$
+				- 防止过拟合：$C(p,q)=\sum\limits_{(u,i)\in\text{Train}}\left(r_{ui}-\sum\limits_f^Fp_{uf}q_{if}\right)^2+\lambda\left(\rVert p_u\rVert^2+\rVert q_i\rVert^2\right)$
+				- 计算：随机梯度下降
+					- $\begin{cases}\frac{\partial C}{\partial p_{uf}}=-2q_{if}+2\lambda p_{uf} \\ \frac{\partial C}{\partial q_{if}}=-2p_{uf}+2\lambda q_{if}\end{cases}$
+                    - 递推公式：$\begin{cases}p_{uf}=p_{uf}+\alpha(q_{if}-\lambda p_{uf}) \\ q_{if}=q_{if}+\alpha(p_{uf}-\lambda q_{if}) \end{cases}$
+		- 加入偏置项的LFM
+			- $\hat{r}_{ui}=\mu +b_u+b_i+p_u^T\cdot q_i$
+				- $\mu$：整体评分平均数
+				- $b_u$：用户评分习惯是否苛刻
+				- $b_i$：物品质量
+		- 考虑邻域影响的LFM
+			- 可学习的Item-CF:$\hat{r}_{ui}=\frac{1}{\sqrt{|N(u)|}}\sum\limits_{j\in N(u)}w_{ij}$
+				- $w_{ij}$计算：
+					- $C(w)=\sum\limits_{(u,i)\in\text{Train}}\left(r_{ui}-\sum\limits_{j\in N(u)}w_{ij}r_{uj}\right)^2+\lambda w_{ij}^2$
+				- w矩阵太大，需要降维$n^2$→$2nF$；
+					- $\hat{r}_{ui}=\frac{1}{\sqrt{|N(u)|}}\sum\limits_{j\in N(u)}x_i^Ty_j=\frac{1}{\sqrt{|N(u)|}}x_i^T\sum\limits_{j\in N(u)}y_j$
+						- $x_i$，$y_j$为F维向量
+				- 增加偏置:
+					- $\hat{r}_{ui}=\mu +b_u+b_i+p_u^T\cdot q_i+\frac{1}{\sqrt{|N(u)|}}x_i^T\sum\limits_{j\in N(u)}y_j$
+				- SVD++：令$x=q$
+					- $\hat{r}_{ui}=\mu +b_u+b_i+q_i^T\cdot(p_u+\frac{1}{\sqrt{|N(u)|}}\sum\limits_{j\in N(u)}y_j)$
+		- 加入时间信息：
+			- 基于邻域的模型荣和时间信息：TItemCF
+				- $\hat{r}_{ui}=\frac{\sum_{j\in N(u)\cap S(i,K)}f(w_{ij},\Delta t)r_{uj}}{\sum_{j\in N(u)\cap S(i,K)}f(w_{ij},\Delta t)}$
+					- $\Delta t= t_{ui}-t{uj}$：评分时间差
+					- $f(w_{ij},\Delta t)=\sigma\left(\delta\cdot w_{ij}\cdot \exp(\frac{-|\Delta t|}{\beta})+\gamma\right)$
+						- $\sigma(x)=\frac{1}{1+\exp(-x)}$ sigmoid函数
+			- 基于矩阵分解的模型融合时间信息(TSVD)：$\hat{r}_{uit}=\mu+b_u+b_i+b_t+p_u^T\cdot q_i+x_u^T\cdot y_t+s_i^Tz_t+\sum\limits_fg_{u,f}h_{i,f}l_{t,f}$
+				- $b_t$：系统整体评分随时间变化效应
+				- $x_u^T\cdot y_t$：用户评分随时间变化
+				- $s_i^Tz_t$：物品评分随时间变化
+				- $\sum\limits_fg_{u,f}h_{i,f}l_{t,f}$：用户兴趣随时间变化
+			- SVD++融合时间信息：
+				- $\hat{r}_{uit}=\mu +b_u(t)+b_i(t)+q_i^T\cdot\left(p_u(t)+\frac{1}{\sqrt{|N(u)|}}\sum\limits_{j\in N(u)}y_j\right)$
+					- $b_u(t)=b_u+\alpha_u\cdot \text{dev}_u(t)+b_{ut}+b_{u,\text{period}(t)}$
+					- $\text{dev}_u(t)=\text{sign}(t-t_u)\cdot|t-t_u|^\beta$
+					- $b_i(t)=b_i+b_it+b_{i,\text{period}(t)}$
+					- $p_{uf}(t)=p_{uf}+p_{uft}$
+					- $t_u$：用户所有评分的平均时间
+					- $\text{period}(t)$考虑季节效应，可以定义为t所在月份
+		- 模型融合
+			- 模型级联融合：$C=\sum\limits_{(u,i)\in\text{Train}}(r_{ui}-\hat{r}_{ui}^{(k)}-\hat{r}_{ui}^{(k+1)})$
+			- 模型加权融合:$\hat{r}=\sum\limits_{k=1}^K\alpha_k\hat{r}^{(k)}$
