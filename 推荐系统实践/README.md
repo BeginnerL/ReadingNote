@@ -378,3 +378,30 @@
 			- 时间多样性
 				- 记录用户每次推荐结果：可以只存近期
 				- 旧结果降权
+- 评分预测算法
+	- 离线实验：$RMSE=\frac{\sqrt{\sum\limits_{(u,i)\in T}(r_{ui}-\hat{r}_{ui})^2}}{|\text{Test}|}$
+	- 评分预测：
+		- $\hat{r}_{ui}=\frac{\sum_{(v,j)\in \text{Train},\phi(u)=\phi(v),\varphi(i)=\varphi(j)}r_{vj}}{\sum_{(v,j)\in \text{Train},\phi(u)=\phi(v),\varphi(i)=\varphi(j)}1}$
+			- $\phi(u)$：用户所属的类
+			- $\varphi(i)$：物品所属的类
+			- 特例：
+				- $\phi(u)=0,\varphi(i)=0$：全局平均
+					- $\hat{r}_{ui}=\frac{\sum_{(u,i)\in \text{Train}}r_{ui}}{\sum_{(u,i)\in \text{Train}}1}$
+				- $\phi(u)=u,\varphi(i)=0$：用户平均评分
+					- $\hat{r}_{ui}=\frac{\sum_{i\in N(u)}r_{ui}}{\sum_{i\in N(u)}1}$
+				- $\phi(u)=0,\varphi(i)=i$：物品平均评分
+					- $\hat{r}_{ui}=\frac{\sum_{u\in N(i)}r_{ui}}{\sum_{u\in N(i)}1}$
+	- 基于用户邻域评分预测
+		- 参考兴趣相似用户评分：$\hat{r}_{ui}=\bar{r}_u+\frac{\sum_{v\in S(u,K)\cap N(i)}w_{uv}(r_{vi}-\bar{r}_v)}{\sum_{v\in S(u,K)\cap N(i)}|w_{uv}|}$
+			- $S(u,K)$：与用户最相似的K个用户的集合
+			- $N(i)$：对i评过分的用户集合
+			- $\bar{r}_v$：v打分的平均分
+			- 用户相似度：皮尔逊公式$w_{uv}=\frac{\sum_{i\in I}(r_{ui}-\bar{r}_u)(r_{vi}-\bar{r}_v)}{\sqrt{\sum_{i\in I}(r_{ui}-\bar{r}_u)^2\sum_{i\in I}(r_{vi}-\bar{r}_v)^2}}$
+	- 基于物品邻域评分预测
+		- 参考用户u对与i相似的物品的打分：$\hat{r}_{ui}=\bar{r}_i+\frac{\sum_{j\in S(i,K)\cap N(u)}w_{ij}(r_{uj}-\bar{r}_i)}{\sum_{j\in S(i,K)\cap N(u)}|w_{ij}|}$
+			- $N(u)$：用户u打过分的物品的集合
+			- 物品相似度$w_{ij}$：
+				- 余弦：$w_{ij}=\frac{\sum_{u\in U}r_{ui}\cdot r_{uj}}{\sqrt{\sum_{u\in U}r_{ui}^2 \sum_{u\in U}r_{uj}^2}}$
+				- 皮尔逊：$w_{ij}=\frac{\sum_{u\in U}(r_{ui}-\bar{r}_i)\cdot (r_{uj}-\bar{r}_j)}{\sqrt{\sum_{u\in U}(r_{ui}-\bar{r}_i)^2 \sum_{u\in U}(r_{uj}-\bar{r}_j)^2}}$
+				- 修正余弦(效果较好)：$w_{ij}=\frac{\sum_{u\in U}(r_{ui}-\bar{r}_u)\cdot (r_{uj}-\bar{r}_u)}{\sqrt{\sum_{u\in U}(r_{ui}-\bar{r}_u)^2 \sum_{u\in U}(r_{uj}-\bar{r}_u)^2}}$
+				- 
